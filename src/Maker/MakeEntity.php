@@ -436,6 +436,7 @@ final class MakeEntity extends AbstractMaker implements InputAwareMakerInterface
             $data['nullable'] = true;
         }
 
+        $data['options']['comment'] = $io->ask('The comment of the column in the schema', '');
         return $data;
     }
 
