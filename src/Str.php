@@ -219,6 +219,48 @@ final class Str
         return str_replace('  ', ' ', ucfirst(trim(implode(' ', preg_split('/(?=[A-Z])/', $variableName)))));
     }
 
+    /**
+     * @author lcp0578
+     * @param string $entityClassName
+     * @return string
+     */
+    public static function getColonNamespace(string $entityClassName): string
+    {
+        if(str_contains($entityClassName, ':')){
+            $entityClassNameArray = explode(':', $entityClassName);
+            return $entityClassNameArray[0] . '\\';
+        }
+        return '';
+    }
+
+    /**
+     * @author lcp0578
+     * @param string $entityClassName
+     * @return string
+     */
+    public static function getColonEntityClassName(string $entityClassName): string
+    {
+        if(str_contains($entityClassName, ':')){
+            $entityClassNameArray = explode(':', $entityClassName);
+            $entityClassName = $entityClassNameArray[1];
+        }
+        return $entityClassName;
+    }
+
+    /**
+     * @author lcp0578
+     * @param string $fullName
+     * @param string $relativeName
+     * @return string
+     */
+    public static function getNamespaceByClassNameDetails(string $fullName, string $relativeName): string
+    {
+        $namespaceArray = explode('\\', $fullName);
+        $diffArray = array_diff($namespaceArray, ['App', 'Entity', $relativeName]);
+        $namespacePrefix = implode('\\', $diffArray);
+        return empty($namespacePrefix) ? '' : $namespacePrefix . '\\';
+    }
+
     private static function pluralize(string $word): string
     {
         return static::getInflector()->pluralize($word);
