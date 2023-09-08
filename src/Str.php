@@ -249,6 +249,20 @@ final class Str
 
     /**
      * @author lcp0578
+     * @param string $entityClassName
+     * @return string
+     */
+    public static function getColonFullEntityClassName(string $entityClassName): string
+    {
+        if(str_contains($entityClassName, ':')){
+            $entityClassNameArray = explode(':', $entityClassName);
+            $entityClassName = 'App\\' . $entityClassNameArray[0] . '\Entity\\' . $entityClassNameArray[1];
+        }
+        return $entityClassName;
+    }
+
+    /**
+     * @author lcp0578
      * @param string $fullName
      * @param string $relativeName
      * @return string

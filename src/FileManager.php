@@ -164,7 +164,7 @@ class FileManager
             throw new \RuntimeException('Cannot get path for template: is Twig installed?');
         }
 
-        return $this->twigDefaultPath.'/'.$filename;
+        return str_contains($filename, 'Bundle') ? $filename : $this->twigDefaultPath.'/'.$filename;
     }
 
     /**

@@ -92,7 +92,7 @@ final class MakeCrud extends AbstractMaker
             $input->setArgument('entity-class', $value);
         }
 
-        $defaultControllerClass = Str::asClassName(sprintf('%s Controller', $input->getArgument('entity-class')));
+        $defaultControllerClass = Str::asClassName(sprintf('%s Controller', str::getColonEntityClassName($input->getArgument('entity-class'))));
 
         $this->controllerClassName = $io->ask(
             sprintf('Choose a name for your controller class (e.g. <fg=yellow>%s</>)', $defaultControllerClass),
@@ -104,9 +104,11 @@ final class MakeCrud extends AbstractMaker
 
     public function generate(InputInterface $input, ConsoleStyle $io, Generator $generator): void
     {
+        $namespacePrefix = str::getColonNamespace($input->getArgument('entity-class'));
+        $entityClassName = str::getColonEntityClassName($input->getArgument('entity-class'));
         $entityClassDetails = $generator->createClassNameDetails(
-            Validator::entityExists($input->getArgument('entity-class'), $this->doctrineHelper->getEntitiesForAutocomplete()),
-            'Entity\\'
+            str::getShortClassName(Validator::entityExists(str::getColonFullEntityClassName($input->getArgument('entity-class')), $this->doctrineHelper->getEntitiesForAutocomplete())),
+            $namespacePrefix . 'Entity\\'
         );
 
         $entityDoctrineDetails = $this->doctrineHelper->createDoctrineDetails($entityClassDetails->getFullName());
@@ -117,7 +119,7 @@ final class MakeCrud extends AbstractMaker
         if (null !== $entityDoctrineDetails->getRepositoryClass()) {
             $repositoryClassDetails = $generator->createClassNameDetails(
                 '\\'.$entityDoctrineDetails->getRepositoryClass(),
-                'Repository\\',
+                $namespacePrefix . 'Repository\\',
                 'Repository'
             );
 
@@ -132,7 +134,7 @@ final class MakeCrud extends AbstractMaker
 
         $controllerClassDetails = $generator->createClassNameDetails(
             $this->controllerClassName,
-            'Controller\\',
+            $namespacePrefix. 'Controller\\',
             'Controller'
         );
 
@@ -140,7 +142,7 @@ final class MakeCrud extends AbstractMaker
         do {
             $formClassDetails = $generator->createClassNameDetails(
                 $entityClassDetails->getRelativeNameWithoutSuffix().($iter ?: '').'Type',
-                'Form\\',
+                $namespacePrefix . 'Form\\',
                 'Type'
             );
             ++$iter;
@@ -152,8 +154,10 @@ final class MakeCrud extends AbstractMaker
         $entityTwigVarPlural = Str::asTwigVariable($entityVarPlural);
         $entityTwigVarSingular = Str::asTwigVariable($entityVarSingular);
 
-        $routeName = Str::asRouteName($controllerClassDetails->getRelativeNameWithoutSuffix());
+        $routeName = Str::asRouteName($namespacePrefix . $controllerClassDetails->getRelativeNameWithoutSuffix());
         $templatesPath = Str::asFilePath($controllerClassDetails->getRelativeNameWithoutSuffix());
+        $templatesRenderPath = empty($namespacePrefix) ? $templatesPath : '@' .  trim($namespacePrefix, '\\') . '/' . $templatesPath;
+        $templatesPath = empty($namespacePrefix) ? $templatesPath : 'src/' . trim($namespacePrefix, '\\') . '/Resources/views/' . $templatesPath;
 
         $useStatements = new UseStatementGenerator([
             $entityClassDetails->getFullName(),
@@ -178,7 +182,7 @@ final class MakeCrud extends AbstractMaker
                     'form_class_name' => $formClassDetails->getShortName(),
                     'route_path' => Str::asRoutePath($controllerClassDetails->getRelativeNameWithoutSuffix()),
                     'route_name' => $routeName,
-                    'templates_path' => $templatesPath,
+                    'templates_path' => $templatesRenderPath,
                     'entity_var_plural' => $entityVarPlural,
                     'entity_twig_var_plural' => $entityTwigVarPlural,
                     'entity_var_singular' => $entityVarSingular,
