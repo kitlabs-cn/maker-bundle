@@ -37,9 +37,11 @@ final class EntityClassGenerator
 
     public function generateEntityClass(ClassNameDetails $entityClassDetails, bool $apiResource, bool $withPasswordUpgrade = false, bool $generateRepositoryClass = true, bool $broadcast = false): string
     {
+
+        $namespacePrefix = str::getNamespaceByClassNameDetails($entityClassDetails->getFullName(), $entityClassDetails->getRelativeName());
         $repoClassDetails = $this->generator->createClassNameDetails(
             $entityClassDetails->getRelativeName(),
-            'Repository\\',
+            $namespacePrefix . 'Repository\\',
             'Repository'
         );
 
